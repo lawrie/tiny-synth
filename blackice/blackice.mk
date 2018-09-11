@@ -5,8 +5,8 @@ chip.bin: $(VERILOG_FILES) ${PCF_FILE}
 
 .PHONY: upload 
 upload: chip.bin 
-	stty -F /dev/ttyACM1 raw 
-	cat chip.bin >/dev/ttyACM1 
+	stty -F /dev/ttyACM0 raw 
+	cat chip.bin >/dev/ttyACM0 
  
 .PHONY: clean 
 clean: 
