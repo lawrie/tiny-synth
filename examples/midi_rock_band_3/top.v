@@ -6,17 +6,16 @@
 `include "../../hdl/tiny-synth-all.vh"
 `include "midi_player.vh"
 
-parameter NUM_SWITCHES = 8;
-parameter NUM_DIALS = 2;
-
-`ifdef blackice
-parameter NUM_LEDS = 4;
-`else
-parameter NUM_LEDS = 1;
-`endif
-
 // look in pins.pcf for all the pin names on the TinyFPGA BX board
-module top (
+module top #(
+  parameter NUM_SWITCHES = 8,
+  parameter NUM_DIALS = 2,
+`ifdef blackice
+  parameter NUM_LEDS = 4
+`else
+  parameter NUM_LEDS = 1
+`endif
+  )(
 `ifdef blackice
     input CLK_100,    // 100MHz clock
 `else
@@ -66,10 +65,8 @@ module top (
       .audio_data(final_mix),
       .led(LED),
       .switches(~switches),
-      .quadA(quadA[0]),
-      .quadB(quadB[0]),
-      .quad2A(quadA[1]),
-      .quad2B(quadB[1]));
+      .quadA(quadA),
+      .quadB(quadB));
 
     pdm_dac #(.DATA_BITS(SAMPLE_BITS)) dac1(
       .din(final_mix),

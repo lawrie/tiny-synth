@@ -16,16 +16,17 @@
 `include "rotary.vh"
 
 module midi_player #(
-  parameter SAMPLE_BITS = 12
+  parameter SAMPLE_BITS = 12,
+  parameter NUM_LEDS  = 1,
+  parameter NUM_SWITCHES = 8,
+  parameter NUM_DIALS = 2
 ) (
   input wire clk,
   input wire serial_rx,
-  input [7:0] switches,
-  input quadA,
-  input quadB,
-  input quad2A,
-  input quad2B,
-  output [3:0] led,
+  input [NUM_SWITCHES-1:0] switches,
+  input [NUM_DIALS-1:0] quadA,
+  input [NUM_DIALS-1:0] quadB,
+  output [NUM_LEDS-1:0] led,
   output signed [SAMPLE_BITS-1:0] audio_data
 );
 
@@ -135,11 +136,11 @@ module midi_player #(
 
   reg [5:0] sustain1;
   assign sustain = sustain1[5:2];
-  rotary #(.BITS(6), .INC(1), .INIT(8)) rot1 (.clk(clk), .quadA(quadA), .quadB(quadB), .value(sustain1));
+  rotary #(.BITS(6), .INC(1), .INIT(8)) rot1 (.clk(clk), .quadA(quadA[0]), .quadB(quadB[0]), .value(sustain1));
 
   reg [5:0] attack1;
   assign attack = attack1[5:2];
-  rotary #(.BITS(6), .INC(1), .INIT(8)) rot2 (.clk(clk), .quadA(quad2A), .quadB(quad2B), .value(attack1));
+  rotary #(.BITS(6), .INC(1), .INIT(8)) rot2 (.clk(clk), .quadA(quadA[1]), .quadB(quadB[1]), .value(attack1));
 
   reg signed [17:0] filter_f;
   reg signed [17:0] filter_q1;
