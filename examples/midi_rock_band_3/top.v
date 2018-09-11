@@ -8,7 +8,12 @@
 
 parameter NUM_SWITCHES = 8;
 parameter NUM_DIALS = 2;
+
+`ifdef blackice
 parameter NUM_LEDS = 4;
+`else
+parameter NUM_LEDS = 1;
+`endif
 
 // look in pins.pcf for all the pin names on the TinyFPGA BX board
 module top (
@@ -37,7 +42,7 @@ module top (
 
     SB_IO #(
         .PIN_TYPE(6'b 0000_01),
-        .PULLUP(1'b 0)
+        .PULLUP(1'b 1)
     ) sw[NUM_SWITCHES-1:0] (
         .PACKAGE_PIN(SWITCHES),
         .D_IN_0(switches)
@@ -56,14 +61,14 @@ module top (
 
     wire signed [SAMPLE_BITS-1:0] final_mix;
     midi_player #(.SAMPLE_BITS(SAMPLE_BITS)) midi_player(
-      .clk(CLK), 
-      .serial_rx(serial_rx), 
-      .audio_data(final_mix), 
-      .led(LED), 
-      .switches(~switches), 
-      .quadA(quadA[0]), 
-      .quadB(quadB[0]), 
-      .quad2A(quadA[1]), 
+      .clk(CLK),
+      .serial_rx(serial_rx),
+      .audio_data(final_mix),
+      .led(LED),
+      .switches(~switches),
+      .quadA(quadA[0]),
+      .quadB(quadB[0]),
+      .quad2A(quadA[1]),
       .quad2B(quadB[1]));
 
     pdm_dac #(.DATA_BITS(SAMPLE_BITS)) dac1(

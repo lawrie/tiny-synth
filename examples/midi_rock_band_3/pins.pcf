@@ -63,7 +63,7 @@ set_io SWITCHES[5] A8
 set_io SWITCHES[6] B7
 set_io SWITCHES[7] A7
 set_io quadA[0] B6
-set_io quadb[0] A6
+set_io quadB[0] A6
 
 # SPI flash interface on bottom of board
 #set_io --warn-no-port SPI_SS F7
@@ -83,7 +83,7 @@ set_io quadb[0] A6
 #set_io --warn-no-port PIN_31 J2
 
 # LED
-#set_io --warn-no-port LED B3
+set_io LED B3
 
 # USB
 #set_io --warn-no-port USBP B4

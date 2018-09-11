@@ -104,9 +104,9 @@ module midi_player #(
   // changeable voice parameters
 
   reg [3:0] attack;
-  reg [3:0] decay;
+  reg [3:0] decay = 8;
   reg [3:0] sustain;
-  reg [3:0] rel;
+  reg [3:0] rel = 8;
 
   reg [1:0] midi_wave_select;
   reg [7:0] pulse_width = 128;
@@ -115,7 +115,7 @@ module midi_player #(
   // 0 = no filter, 1-4 = low-pass, 5-8 = high-pass, 9-12 = band-pass, 13-15 = notch-pass
   reg [3:0] midi_filter_select;
 
-  reg [6:0] midi_filter_freq;
+  reg [6:0] midi_filter_freq = 64;
   reg [6:0] midi_filter_q = 64;
 
   reg [3:0] voice_waveform_enable;
@@ -135,11 +135,11 @@ module midi_player #(
 
   reg [5:0] sustain1;
   assign sustain = sustain1[5:2];
-  rotary #(.BITS(6), .INC(1), .INIT(8)) rot1 (.clk(clk), .quadA(quadA), .quadB(quadB), .value(sustain1)); 
+  rotary #(.BITS(6), .INC(1), .INIT(8)) rot1 (.clk(clk), .quadA(quadA), .quadB(quadB), .value(sustain1));
 
   reg [5:0] attack1;
   assign attack = attack1[5:2];
-  rotary #(.BITS(6), .INC(1), .INIT(8)) rot2 (.clk(clk), .quadA(quad2A), .quadB(quad2B), .value(attack1)); 
+  rotary #(.BITS(6), .INC(1), .INIT(8)) rot2 (.clk(clk), .quadA(quad2A), .quadB(quad2B), .value(attack1));
 
   reg signed [17:0] filter_f;
   reg signed [17:0] filter_q1;
@@ -172,7 +172,7 @@ module midi_player #(
    (switches[7:4] == 0) ? clamped_voice_out
    : switches[4] ? out_lp
    : switches[5] ? out_hp
-   : switches[6] ? out_bp 
+   : switches[6] ? out_bp
    : out_notch;
 
 
@@ -244,7 +244,7 @@ module midi_player #(
               endcase
             end
       4'he: midi_filter_q <= midi_parameter_2[6:0];
-            
+
       endcase
     end else begin
       // no event to acknowledge, so clear ack flag
