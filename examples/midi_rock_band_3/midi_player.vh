@@ -17,7 +17,11 @@
 
 module midi_player #(
   parameter SAMPLE_BITS = 12,
-  parameter NUM_LEDS  = 1,
+`ifdef blackice
+  parameter NUM_LEDS = 4,
+`else
+  parameter NUM_LEDS = 1,
+`endif
   parameter NUM_SWITCHES = 8,
   parameter NUM_DIALS = 2
 ) (
