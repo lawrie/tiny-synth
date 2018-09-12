@@ -3,6 +3,7 @@ hardware.asc
 hardware.bin
 hardware.blif
 hardware.rpt
+chip.txt
 *.out
 *.vcd
 *.idea
