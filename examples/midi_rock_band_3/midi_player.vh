@@ -23,7 +23,7 @@ module midi_player #(
   parameter NUM_LEDS = 1,
 `endif
   parameter NUM_SWITCHES = 8,
-  parameter NUM_DIALS = 2
+  parameter NUM_DIALS = 5
 ) (
   input wire clk,
   input wire serial_rx,
@@ -102,56 +102,49 @@ module midi_player #(
   // MIXER: this adds the output from the 8 voices together
   always @(posedge SAMPLE_CLK) begin
     raw_combined_voice_out <= (voice_samples[0]+voice_samples[1]+voice_samples[2]+voice_samples[3])>>>1;
-//                                +voice_samples[4]+voice_samples[5]+voice_samples[6]+voice_samples[7])>>>2;
   end
 
-
   // changeable voice parameters
-
   reg [3:0] attack;
-  reg [3:0] decay = 8;
+  reg [3:0] decay;
   reg [3:0] sustain;
-  reg [3:0] rel = 8;
+  reg [3:0] rel;
 
   reg [1:0] midi_wave_select;
-  reg [7:0] pulse_width = 128;
-
-  // assign audio output based on selected filter
-  // 0 = no filter, 1-4 = low-pass, 5-8 = high-pass, 9-12 = band-pass, 13-15 = notch-pass
-  reg [3:0] midi_filter_select;
+  reg [7:0] pulse_width;
 
   reg [6:0] midi_filter_freq = 64;
   reg [6:0] midi_filter_q = 64;
 
   reg [3:0] voice_waveform_enable;
 
-  /*
-  always @(*) begin
-    case (midi_wave_select)
-      2'b00: voice_waveform_enable <= 4'b0100;
-      2'b01: voice_waveform_enable <= 4'b0010;
-      2'b10: voice_waveform_enable <= 4'b0001;
-      2'b11: voice_waveform_enable <= 4'b1000;
-    endcase
-  end
-  */
-
   assign voice_waveform_enable = switches[3:0];
 
   reg [5:0] sustain1;
   assign sustain = sustain1[5:2];
-  rotary #(.BITS(6), .INC(1), .INIT(8)) rot1 (.clk(clk), .quadA(quadA[0]), .quadB(quadB[0]), .value(sustain1));
+  rotary #(.BITS(6), .INC(1), .INIT(16)) rot1 (.clk(clk), .quadA(quadA[0]), .quadB(quadB[0]), .value(sustain1));
 
   reg [5:0] attack1;
   assign attack = attack1[5:2];
-  rotary #(.BITS(6), .INC(1), .INIT(8)) rot2 (.clk(clk), .quadA(quadA[1]), .quadB(quadB[1]), .value(attack1));
+  rotary #(.BITS(6), .INC(1), .INIT(16)) rot2 (.clk(clk), .quadA(quadA[1]), .quadB(quadB[1]), .value(attack1));
+
+  reg [5:0] decay1;
+  assign decay = decay1[5:2];
+  rotary #(.BITS(6), .INC(1), .INIT(16)) rot3 (.clk(clk), .quadA(quadA[2]), .quadB(quadB[2]), .value(decay1));
+
+  reg [5:0] rel1;
+  assign rel = rel1[5:2];
+  rotary #(.BITS(6), .INC(1), .INIT(16)) rot4 (.clk(clk), .quadA(quadA[3]), .quadB(quadB[3]), .value(rel1));
+
+  reg [9:0] pulse_width1;
+  assign pulse_width = pulse_width1[9:2];
+  rotary #(.BITS(10), .INC(1), .INIT(384)) rot5 (.clk(clk), .quadA(quadA[4]), .quadB(quadB[4]), .value(pulse_width1));
 
   reg signed [17:0] filter_f;
   reg signed [17:0] filter_q1;
 
   f_table filter_f_lookup(.clk(SAMPLE_CLK), .val(midi_filter_freq), .result(filter_f));
   q1_table filter_q1_lookup(.clk(SAMPLE_CLK), .val(midi_filter_q), .result(filter_q1));
-
 
   // state variable filter
   filter_svf_pipelined #(.SAMPLE_BITS(SAMPLE_BITS))
@@ -169,18 +162,12 @@ module midi_player #(
 
 //  assign audio_data = clamped_voice_out;
   assign audio_data =
-/*  (midi_filter_select == 0) ? clamped_voice_out
-    : (midi_filter_select < 5) ? out_lp
-    : (midi_filter_select < 9) ? out_hp
-    : (midi_filter_select < 13) ? out_bp
-    : out_notch;
-*/
+
    (switches[7:4] == 0) ? clamped_voice_out
    : switches[4] ? out_lp
    : switches[5] ? out_hp
    : switches[6] ? out_bp
    : out_notch;
-
 
   generate
     genvar i;
@@ -238,18 +225,10 @@ module midi_player #(
         // controller update; update voice parameters appropriately
         4'hb: begin
               case (midi_parameter_1)
-                7'h01:  midi_filter_freq <= midi_parameter_2[6:0]; /* modulation wheel 1 */
-                7'h02:  midi_filter_q <= midi_parameter_2[6:0];    /* modulation wheel 2 */
-                //7'h0e:  attack <= midi_parameter_2[6:3];
-                7'h0f:  decay <= midi_parameter_2[6:3];
-                //7'h10:  sustain <= midi_parameter_2[6:3];
-                7'h11:  rel <= midi_parameter_2[6:3];
-                //7'h12:  midi_wave_select <= midi_parameter_2[6:5];
-                7'h13:  pulse_width <= {midi_parameter_2[6:0],1'b0};
-                //7'h14:  midi_filter_select <= midi_parameter_2[6:3];
+                7'h01:  midi_filter_freq <= midi_parameter_2[6:0]; /* track pad - modulation*/
               endcase
             end
-      4'he: midi_filter_q <= midi_parameter_2[6:0];
+      4'he: midi_filter_q <= midi_parameter_2[6:0]; // track pad with button - pitch bend
 
       endcase
     end else begin

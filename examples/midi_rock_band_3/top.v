@@ -9,7 +9,7 @@
 // look in pins.pcf for all the pin names on the TinyFPGA BX board
 module top #(
   parameter NUM_SWITCHES = 8,
-  parameter NUM_DIALS = 2,
+  parameter NUM_DIALS = 5,
 `ifdef blackice
   parameter NUM_LEDS = 4
 `else
